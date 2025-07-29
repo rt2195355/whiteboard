@@ -1,24 +1,41 @@
-import React, { useState } from 'react'
+import { useContext } from 'react'
 import classes from "./index.module.css";
 import cx from "classnames"
 import { LuRectangleHorizontal } from 'react-icons/lu';
-import { FaSlash } from 'react-icons/fa';
+import { FaRegCircle, FaSlash, FaArrowRight } from 'react-icons/fa';
+import boardContext from '../../store/board-context';
+import { TOOL_ITEMS } from '../../constants';
 
 const Toolbar = () => {
-    const [activeToolItem, setActiveToolItem] = useState('LINE');
+    const { activeToolItem, changeToolHandler } = useContext(boardContext);
+
     return (
         <div className={classes.container}>
-            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem == 'LINE' })} onClick={() => {
-                setActiveToolItem("LINE");
+            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.LINE })} onClick={() => {
+                changeToolHandler(TOOL_ITEMS.LINE);
             }}>
                 <FaSlash />
             </div>
-            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem == 'RECT' })} onClick={
+            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.RECTANGLE })} onClick={
                 () => {
-                    setActiveToolItem("RECT");
+                    changeToolHandler(TOOL_ITEMS.RECTANGLE);
                 }
             }>
                 <LuRectangleHorizontal />
+            </div>
+            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.CIRCLE })} onClick={
+                () => {
+                    changeToolHandler(TOOL_ITEMS.CIRCLE);
+                }
+            }>
+                <FaRegCircle />
+            </div>
+            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.ARROW })} onClick={
+                () => {
+                    changeToolHandler(TOOL_ITEMS.ARROW);
+                }
+            }>
+                <FaArrowRight />
             </div>
         </div>
     )
