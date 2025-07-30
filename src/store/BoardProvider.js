@@ -11,27 +11,33 @@ const boardReducer = (state, action) => {
             activeToolItem: action.payload.tool
         };
         case BOARD_ACTIONS.DRAW_DOWN:
-            const { clientX, clientY } = action.payload;
-            const newEle = createRoughElement(
+            const { clientX, clientY, stroke, fill, size } = action.payload;
+            const newElement = createRoughElement(
                 state.elements.length,
                 clientX,
                 clientY,
                 clientX,
                 clientY,
-                { type: state.activeToolItem })
+                { type: state.activeToolItem, stroke, fill, size })
             const prevEls = state.elements;
             return {
                 ...state,
                 toolActionType: TOOL_ACTION_TYPES.DRAWING,
-                elements: [...prevEls, newEle]
+                elements: [...prevEls, newElement]
             }
         case BOARD_ACTIONS.DRAW_MOVE:
             {
                 const { clientX, clientY } = action.payload;
                 const newEls = [...state.elements]
                 const index = state.elements.length - 1;
-                const { x1, y1 } = newEls[index];
-                const newElement = createRoughElement(index, x1, y1, clientX, clientY, { type: state.activeToolItem });
+                const { x1, y1, stroke, fill, size } = newEls[index];
+                const newElement = createRoughElement(index, x1, y1, clientX, clientY, {
+                    type: state.activeToolItem,
+                    stroke,
+                    fill,
+                    size
+                });
+
                 newEls[index] = newElement;
                 return {
                     ...state,
@@ -67,23 +73,29 @@ const BoardProvider = ({ children }) => {
             }
         })
     }
-    const boardMouseDownHandler = (event) => {
+    const boardMouseDownHandler = (event, toolboxState) => {
         const { clientX, clientY } = event;
         dispatchBoardAction({
             type: BOARD_ACTIONS.DRAW_DOWN,
             payload: {
-                clientX, clientY
+                clientX,
+                clientY,
+                stroke: toolboxState[boardState.activeToolItem]?.stroke,
+                fill: toolboxState[boardState.activeToolItem]?.fill,
+                size: toolboxState[boardState.activeToolItem]?.size
             }
         })
 
     }
 
-    const boardMouseMoveHandler = (event) => {
+    const boardMouseMoveHandler = (event, toolboxState) => {
         const { clientX, clientY } = event;
         dispatchBoardAction({
             type: BOARD_ACTIONS.DRAW_MOVE,
             payload: {
-                clientX, clientY
+                clientX, clientY,
+                stroke: toolboxState[boardState.activeToolItem]?.stroke,
+                fill: toolboxState[boardState.activeToolItem]?.fill
             }
         })
     }
