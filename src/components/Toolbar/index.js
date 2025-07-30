@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import classes from "./index.module.css";
 import cx from "classnames"
 import { LuRectangleHorizontal } from 'react-icons/lu';
-import { FaRegCircle, FaSlash, FaArrowRight } from 'react-icons/fa';
+import { FaRegCircle, FaSlash, FaArrowRight, FaPaintBrush, FaEraser } from 'react-icons/fa';
 import boardContext from '../../store/board-context';
 import { TOOL_ITEMS } from '../../constants';
 
@@ -11,6 +11,11 @@ const Toolbar = () => {
 
     return (
         <div className={classes.container}>
+            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.BRUSH })} onClick={() => {
+                changeToolHandler(TOOL_ITEMS.BRUSH);
+            }}>
+                <FaPaintBrush />
+            </div>
             <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.LINE })} onClick={() => {
                 changeToolHandler(TOOL_ITEMS.LINE);
             }}>
@@ -36,6 +41,13 @@ const Toolbar = () => {
                 }
             }>
                 <FaArrowRight />
+            </div>
+            <div className={cx(classes.toolItem, { [classes.active]: activeToolItem === TOOL_ITEMS.ERASER })} onClick={
+                () => {
+                    changeToolHandler(TOOL_ITEMS.ERASER);
+                }
+            }>
+                <FaEraser />
             </div>
         </div>
     )
