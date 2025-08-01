@@ -1,9 +1,9 @@
 import { ARROW_LENGTH, TOOL_ITEMS } from "../constants";
 import rough from "roughjs/bin/rough"
-import { getArrowHeadsCoordinates } from "../math";
+import { getArrowHeadsCoordinates, isPointCloseToLine } from "./math";
 import { getStroke } from "perfect-freehand"
 const gen = rough.generator();
-export const createRoughElement = (id, x1, y1, x2, y2, { type, stroke, fill, size }) => {
+export const createElement = (id, x1, y1, x2, y2, { type, stroke, fill, size }) => {
 
     const element = {
         id, x1, y1, x2, y2, type, fill, stroke, size
@@ -67,6 +67,11 @@ export const createRoughElement = (id, x1, y1, x2, y2, { type, stroke, fill, siz
                 element.roughEle = gen.linearPath(points, options);
                 return element;
             }
+        case TOOL_ITEMS.TEXT:
+            {
+                element.text = "";
+                return element;
+            }
         default:
             console.log(type);
             throw new Error("Tool type not recognised");
@@ -74,8 +79,42 @@ export const createRoughElement = (id, x1, y1, x2, y2, { type, stroke, fill, siz
 }
 
 
-export const isPointNearElement = (element, pointX, ponitY) => {
-    return false;
+export const isPointNearElement = (element, pointX, pointY) => {
+    const { x1, y1, x2, y2, type } = element;
+    switch (type) {
+        case TOOL_ITEMS.LINE:
+        case TOOL_ITEMS.ARROW:
+            {
+                return isPointCloseToLine(x1, y1, x2, y2, pointX, pointY);
+            }
+        case TOOL_ITEMS.RECTANGLE:
+        case TOOL_ITEMS.CIRCLE:
+            {
+                return (
+                    isPointCloseToLine(x1, y1, x2, y1, pointX, pointY) ||
+                    isPointCloseToLine(x2, y1, x2, y2, pointX, pointY) ||
+                    isPointCloseToLine(x2, y2, x1, y2, pointX, pointY) ||
+                    isPointCloseToLine(x1, y2, x1, y1, pointX, pointY)
+                );
+            }
+        case TOOL_ITEMS.BRUSH:
+            {
+                const context = document.getElementById("canvas").getContext("2d");
+                return context.isPointInPath(element.path, pointX, pointY);
+            }
+        case TOOL_ITEMS.RECTANGLE:
+        case TOOL_ITEMS.CIRCLE:
+            {
+                return (
+                    isPointCloseToLine(x1, y1, x2, y1, pointX, pointY) ||
+                    isPointCloseToLine(x2, y1, x2, y2, pointX, pointY) ||
+                    isPointCloseToLine(x2, y2, x1, y2, pointX, pointY) ||
+                    isPointCloseToLine(x1, y2, x1, y1, pointX, pointY)
+                );
+            }
+        default:
+            throw new Error("Type not recognised");
+    }
 }
 
 
