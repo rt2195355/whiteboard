@@ -62,4 +62,3 @@ export const SIZE_TOOL_TYPES = [
 
 export const ARROW_LENGTH = 20;
 export const ELEMENT_ERASE_THRESHOLD = 0.1;
-

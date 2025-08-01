@@ -1,13 +1,10 @@
 import { createContext } from "react";
 
-
 const toolboxContext = createContext({
     toolboxState: {},
     changeStroke: () => { },
     changeFill: () => { },
-    changeSize: () => { }
-
+    changeSize: () => { },
 });
-
 
 export default toolboxContext;

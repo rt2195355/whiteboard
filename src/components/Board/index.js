@@ -3,82 +3,103 @@ import rough from "roughjs";
 import boardContext from "../../store/board-context";
 import { TOOL_ACTION_TYPES, TOOL_ITEMS } from "../../constants";
 import toolboxContext from "../../store/toolbox-context";
+
 import classes from "./index.module.css";
 
 function Board() {
     const canvasRef = useRef();
     const textAreaRef = useRef();
-    const { elements, boardMouseDownHandler, boardMouseMoveHandler, boardMouseUpHandler, toolActionType, textAreaBlurHandler } = useContext(boardContext);
+    const {
+        elements,
+        toolActionType,
+        boardMouseDownHandler,
+        boardMouseMoveHandler,
+        boardMouseUpHandler,
+        textAreaBlurHandler,
+        undo,
+        redo,
+    } = useContext(boardContext);
     const { toolboxState } = useContext(toolboxContext);
 
     useEffect(() => {
         const canvas = canvasRef.current;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        function handleKeyDown(event) {
+            if (event.ctrlKey && event.key === "z") {
+                undo();
+            } else if (event.ctrlKey && event.key === "y") {
+                redo();
+            }
+        }
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [undo, redo]);
 
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
         context.save();
+
         const roughCanvas = rough.canvas(canvas);
 
-        elements.forEach((el) => {
-            switch (el.type) {
+        elements.forEach((element) => {
+            switch (element.type) {
                 case TOOL_ITEMS.LINE:
                 case TOOL_ITEMS.RECTANGLE:
                 case TOOL_ITEMS.CIRCLE:
                 case TOOL_ITEMS.ARROW:
-                    {
-                        roughCanvas.draw(el.roughEle);
-                        break;
-                    }
+                    roughCanvas.draw(element.roughEle);
+                    break;
                 case TOOL_ITEMS.BRUSH:
-                    {
-                        context.fillStyle = el.stroke;
-                        context.fill(el.path);
-                        context.restore();
-                        break;
-                    }
+                    context.fillStyle = element.stroke;
+                    context.fill(element.path);
+                    context.restore();
+                    break;
                 case TOOL_ITEMS.TEXT:
-                    {
-                        context.textBaseline = "top";
-                        context.font = `${el.size}px Caveat`;
-                        context.fillStyle = el.stroke;
-                        context.fillText(el.text, el.x1, el.y1);
-                        context.restore();
-                        break;
-                    }
+                    context.textBaseline = "top";
+                    context.font = `${element.size}px Caveat`;
+                    context.fillStyle = element.stroke;
+                    context.fillText(element.text, element.x1, element.y1);
+                    context.restore();
+                    break;
                 default:
-                    throw new Error("Type not recognised")
+                    throw new Error("Type not recognized");
             }
-        })
+        });
+
         return () => {
             context.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-    }, [elements])
-
+        };
+    }, [elements]);
 
     useEffect(() => {
-        const textArea = textAreaRef.current;
+        const textarea = textAreaRef.current;
         if (toolActionType === TOOL_ACTION_TYPES.WRITING) {
             setTimeout(() => {
-                textArea.focus();
+                textarea.focus();
             }, 0);
         }
-    },
-        [toolActionType])
-    const handleBoardMouseDown = (event) => {
-        boardMouseDownHandler(event, toolboxState);
-    }
-    const handleMouseMove = (event) => {
+    }, [toolActionType]);
 
-        boardMouseMoveHandler(event, toolboxState);
-    }
+    const handleMouseDown = (event) => {
+        boardMouseDownHandler(event, toolboxState);
+    };
+
+    const handleMouseMove = (event) => {
+        boardMouseMoveHandler(event);
+    };
+
     const handleMouseUp = () => {
         boardMouseUpHandler();
-    }
+    };
 
     return (
         <>
@@ -96,15 +117,15 @@ function Board() {
                     onBlur={(event) => textAreaBlurHandler(event.target.value)}
                 />
             )}
-            <canvas ref={canvasRef}
+            <canvas
+                ref={canvasRef}
                 id="canvas"
-                onMouseDown={handleBoardMouseDown}
+                onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp} />
+                onMouseUp={handleMouseUp}
+            />
         </>
-
     );
 }
-
 
 export default Board;
